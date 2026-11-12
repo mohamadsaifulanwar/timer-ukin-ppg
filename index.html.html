@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Timer UKIN PPG</title>
+    <style>
+        :root {
+            --text: #fff;
+            --muted: #cbd5e1;
+            --bg: #0b1220;
+            --panel: #16213a;
+            --accent: #38bdf8;
+            --yellow: #fde047;
+            --red: #fecaca;
+            box-sizing: border-box;
+            color-scheme: dark;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px)
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0
+        }
+
+        html {
+            scroll-padding-top: env(safe-area-inset-top, 0px)
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            transition: background .4s
+        }
+
+        body.warn {
+            background: #4a3a00
+        }
+
+        body.over {
+            background: #7f1d1d
+        }
+
+        body.over #clock {
+            color: var(--red)
+        }
+
+        body.warn #clock {
+            color: var(--yellow)
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 24px;
+            font-size: clamp(1.1rem, 2.4vw, 2rem);
+            font-weight: 700;
+            background: rgba(0, 0, 0, .3)
+        }
+
+        .top span {
+            white-space: nowrap
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 24px;
+            text-align: center;
+            min-height: 0
+        }
+
+        #phase {
+            font-size: clamp(1.1rem, 2.4vw, 2rem);
+            color: var(--accent);
+            font-weight: 700
+        }
+
+        body.warn #phase,
+        body.over #phase {
+            color: #fff
+        }
+
+        #title {
+            font-size: clamp(2rem, 6vw, 5.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin: .15em 0
+        }
+
+        #clock {
+            font-size: min(34vh, 24vw);
+            font-weight: 800;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            margin: .05em 0
+        }
+
+        #bar {
+            height: 2.2vh;
+            min-height: 12px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .2);
+            overflow: hidden;
+            margin: 0 auto 1.5vh;
+            width: 100%;
+            max-width: 1400px
+        }
+
+        #barI {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: #fff;
+            transition: width .25s
+        }
+
+        #note {
+            font-size: clamp(1.3rem, 3vw, 2.6rem);
+            font-weight: 700;
+            background: rgba(255, 255, 255, .16);
+            border-radius: 16px;
+            padding: .4em .8em;
+            margin: .3em auto;
+            max-width: 1400px
+        }
+
+        #next {
+            font-size: clamp(1.2rem, 2.8vw, 2.4rem);
+            color: var(--muted);
+            font-weight: 600
+        }
+
+        #next b {
+            color: #fff
+        }
+
+        .ctl {
+            display: flex;
+            gap: 10px;
+            padding: 10px 24px 14px;
+            background: rgba(0, 0, 0, .3)
+        }
+
+        button {
+            font: inherit;
+            color: #fff;
+            background: var(--panel);
+            border: 2px solid rgba(255, 255, 255, .25);
+            border-radius: 14px;
+            padding: 12px 18px;
+            font-size: clamp(1rem, 2vw, 1.6rem);
+            font-weight: 700;
+            cursor: pointer;
+            min-height: 56px
+        }
+
+        .ctl button {
+            flex: 1
+        }
+
+        .ctl .go {
+            flex: 3;
+            background: #0369a1;
+            border-color: #38bdf8
+        }
+
+        #menu {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 5;
+            overflow: auto;
+            padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 24px
+        }
+
+        #menu[hidden] {
+            display: none
+        }
+
+        .mw {
+            max-width: 900px;
+            margin: 0 auto
+        }
+
+        h2 {
+            margin: 0 0 4px;
+            font-size: 1.6rem
+        }
+
+        .tot {
+            color: var(--muted);
+            margin-bottom: 12px;
+            font-size: 1.1rem
+        }
+
+        .form {
+            display: grid;
+            grid-template-columns: 1fr 110px;
+            gap: 8px;
+            background: var(--panel);
+            padding: 12px;
+            border-radius: 14px;
+            margin-bottom: 8px
+        }
+
+        .form label {
+            display: block;
+            font-size: .85rem;
+            color: var(--muted);
+            margin-bottom: 2px
+        }
+
+        .form .full {
+            grid-column: 1/-1
+        }
+
+        input {
+            width: 100%;
+            font: inherit;
+            font-size: 1.2rem;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, .25);
+            background: #0b1220;
+            color: #fff;
+            min-height: 50px
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent)
+        }
+
+        #err {
+            color: #fca5a5;
+            font-weight: 700;
+            min-height: 1.3em;
+            margin: 0 4px 6px
+        }
+
+        .add {
+            background: #0369a1;
+            border-color: #38bdf8
+        }
+
+        .opts {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0
+        }
+
+        .opts button {
+            flex: 1;
+            font-size: 1rem;
+            min-height: 48px
+        }
+
+        .ph {
+            font-size: 1.05rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin: 16px 4px 6px;
+            font-weight: 700
+        }
+
+        .item {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 6px 8px;
+            margin-bottom: 6px
+        }
+
+        .item.cur {
+            outline: 2px solid var(--accent)
+        }
+
+        .item.done {
+            opacity: .55
+        }
+
+        .item .t {
+            flex: 1;
+            font-size: 1.15rem;
+            padding: 0 6px;
+            min-width: 0
+        }
+
+        .item .m {
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            color: var(--muted);
+            padding-right: 4px
+        }
+
+        .item .m.o {
+            color: var(--red)
+        }
+
+        .item button {
+            min-height: 44px;
+            padding: 6px 11px;
+            font-size: 1.05rem
+        }
+
+        .empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 24px
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top"><span id="sStep">Langkah 0/0</span><span id="badge"></span><span id="sLeft">Sisa total 0:00</span>
+    </div>
+    <main>
+        <div id="phase"></div>
+        <div id="title"></div>
+        <div id="clock">0:00</div>
+        <div id="bar"><i id="barI"></i></div>
+        <div id="note" hidden></div>
+        <div id="next"></div>
+    </main>
+    <div class="ctl">
+        <button id="bPrev" aria-label="Sebelumnya">◀</button>
+        <button class="go" id="bRun">▶ MULAI</button>
+        <button id="bNext" aria-label="Berikutnya">▶▶</button>
+        <button id="bMenu">☰ Atur</button>
+        <button id="bFull" aria-label="Layar penuh">⛶</button>
+    </div>
+    <div id="menu" hidden>
+        <div class="mw">
+            <h2>Atur Langkah</h2>
+            <div class="tot" id="tot"></div>
+            <div class="form">
+                <div class="full"><label for="fP">Bagian (mis. Pendahuluan, Kegiatan Inti)</label><input id="fP"
+                        list="dl" autocomplete="off"><datalist id="dl"></datalist></div>
+                <div><label for="fT">Langkah / kegiatan</label><input id="fT" autocomplete="off"></div>
+                <div><label for="fM">Menit</label><input id="fM" type="number" min="0.5" step="0.5" inputmode="decimal">
+                </div>
+                <div class="full"><label for="fN">Catatan yang ditampilkan besar (opsional)</label><input id="fN"
+                        autocomplete="off"></div>
+                <button class="add full" id="bAdd">+ Tambah langkah</button>
+            </div>
+            <div id="err"></div>
+            <div id="list"></div>
+            <div class="opts">
+                <button id="oSnd"></button><button id="oAuto"></button><button id="oEx">Gunakan Draf</button><button
+                    id="oReset">↺ Reset waktu</button><button id="oClear">🗑 Hapus semua</button><button id="oClose">✕
+                    Tutup</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        var EX = [{"p": "Pendahuluan", "t": "Orientasi dan kondisi", "m": 2, "n": ""}, {"p": "Pendahuluan", "t": "Apersepsi", "m": 1, "n": ""}, {"p": "Pendahuluan", "t": "Asesmen diagnostik", "m": 3, "n": ""}, {"p": "Pendahuluan", "t": "Motivasi", "m": 2, "n": ""}, {"p": "Pendahuluan", "t": "Penyampaian tujuan pembelajaran", "m": 2, "n": ""}, {"p": "Sintaks 1: Orientasi Siswa pada Masalah", "t": "Sajikan skenario masalah", "m": 3, "n": ""}, {"p": "Sintaks 1: Orientasi Siswa pada Masalah", "t": "Murid menganalisis masalah", "m": 3, "n": ""}, {"p": "Sintaks 2: Mengorganisasi Siswa", "t": "Bagi kelompok heterogen", "m": 2, "n": ""}, {"p": "Sintaks 2: Mengorganisasi Siswa", "t": "Bagikan LKPD dan tetapkan peran", "m": 2, "n": ""}, {"p": "Sintaks 2: Mengorganisasi Siswa", "t": "Jelaskan cara mengerjakan LKPD", "m": 2, "n": ""}, {"p": "Sintaks 3: Membimbing Penyelidikan", "t": "Murid mengamati dan berdiskusi", "m": 10, "n": "Guru berkeliling memberi scaffolding (pertanyaan penuntun). Mulai penilaian proses: lembar observasi sikap."}, {"p": "Sintaks 3: Membimbing Penyelidikan", "t": "Ice Breaking", "m": 10, "n": "Terus berkeliling memberi scaffolding. Lanjutkan penilaian proses."}, {"p": "Sintaks 4: Menyajikan Hasil Karya", "t": "Menyajikan hasil", "m": 4, "n": "Lanjutkan penilaian proses."}, {"p": "Sintaks 4: Menyajikan Hasil Karya", "t": "Presentasi dan tanggapan", "m": 16, "n": "Nilai dengan rubrik kinerja (Lampiran 2) dan beri umpan balik langsung."}, {"p": "Sintaks 5: Analisis dan Evaluasi", "t": "Evaluasi hasil diskusi dan presentasi", "m": 4, "n": "Penilaian proses terakhir."}, {"p": "Penutup", "t": "Kesimpulan", "m": 2, "n": ""}, {"p": "Penutup", "t": "Refleksi", "m": 2, "n": ""}, {"p": "Penutup", "t": "Evaluasi", "m": 8, "n": ""}, {"p": "Penutup", "t": "Tindak lanjut dan penutup", "m": 2, "n": ""}];
+        var KEY = "timer_kegiatan_custom_v3", S = [], st = {i: 0, e: [], run: false, snd: true, auto: true}, beeped = {}, last = performance.now(), ctx = null, ed = -1, armed = {};
+        try {var raw = localStorage.getItem(KEY); if (raw) {var p = JSON.parse(raw); if (p && p.S && p.e && p.S.length === p.e.length) {S = p.S; st.i = p.i || 0; st.e = p.e; st.snd = p.snd !== false; st.auto = p.auto !== false} } } catch (e) { }
+        function $(id) {return document.getElementById(id)}
+        function esc(x) {return String(x).replace(/[&<>"]/g, function (c) {return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]})}
+        function fmt(sec) {sec = Math.max(0, Math.floor(sec)); return Math.floor(sec / 60) + ":" + ("0" + sec % 60).slice(-2)}
+        function save() {try {localStorage.setItem(KEY, JSON.stringify({S: S, i: st.i, e: st.e, snd: st.snd, auto: st.auto}))} catch (e) { } }
+        function total() {return S.reduce(function (a, s) {return a + s.m * 60}, 0)}
+        function changed() {
+            if (st.i >= S.length) st.i = Math.max(0, S.length - 1);
+            beeped = {}; S.forEach(function (s, i) {if (st.e[i] >= s.m * 60) beeped[i] = true});
+            if (!S.length) st.run = false;
+            save(); renderList(); render()
+        }
+        function beep() {
+            try {
+                ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+                [0, .35, .7].forEach(function (t) {var o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 880; g.gain.value = .3; o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + .2)})
+            } catch (e) { }
+            try {navigator.vibrate && navigator.vibrate([200, 100, 200])} catch (e) { }
+        }
+        function go(j) {if (j < 0 || j >= S.length) return; st.i = j; save(); renderList(); render()}
+        function next() {if (st.i < S.length - 1) go(st.i + 1); else {st.run = false; save(); render()} }
+        function toggle() {
+            if (!S.length) {openMenu(); return }
+            st.run = !st.run; last = performance.now();
+            if (st.run) {
+                try {ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); ctx.resume()} catch (e) { }
+                try {navigator.wakeLock && navigator.wakeLock.request("screen").catch(function () { })} catch (e) { }
+            }
+            save(); render()
+        }
+        function tick() {
+            var now = performance.now(), dt = Math.min((now - last) / 1000, 2); last = now;
+            if (st.run && S.length) {
+                var i = st.i; st.e[i] += dt;
+                if (!beeped[i] && st.e[i] >= S[i].m * 60) {beeped[i] = true; if (st.snd) beep(); if (st.auto && i < S.length - 1) {go(i + 1)} }
+                if (Math.floor(now / 1000) % 3 === 0) save()
+            }
+            render()
+        }
+        function render() {
+            var n = S.length;
+            $("oSnd").textContent = "🔔 Suara: " + (st.snd ? "nyala" : "mati");
+            $("oAuto").textContent = "⏭ Otomatis lanjut: " + (st.auto ? "nyala" : "mati");
+            $("bRun").textContent = st.run ? "⏸ JEDA" : "▶ MULAI";
+            $("tot").textContent = n ? ("Total " + (Math.round(total() / 6) / 10) + " menit · " + n + " langkah") : "Belum ada langkah";
+            if (!n) {
+                $("phase").textContent = ""; $("title").textContent = "Belum ada langkah"; $("clock").textContent = "0:00";
+                $("note").hidden = true; $("next").innerHTML = "Ketuk <b>☰ Atur</b> untuk menambah bagian, langkah, dan menit";
+                $("sStep").textContent = "Langkah 0/0"; $("sLeft").textContent = "Sisa total 0:00"; $("badge").textContent = "";
+                $("barI").style.width = "0"; document.body.className = ""; return
+            }
+            var s = S[st.i], plan = s.m * 60, e = st.e[st.i], rem = plan - e, over = rem < 0;
+            $("phase").textContent = s.p; $("title").textContent = s.t;
+            var nt = $("note"); nt.hidden = !s.n; nt.textContent = s.n || "";
+            $("clock").textContent = (over ? "+" : "") + fmt(over ? -rem : Math.ceil(rem));
+            document.body.className = over ? "over" : (rem <= 60 ? "warn" : "");
+            $("barI").style.width = Math.min(100, e / plan * 100) + "%";
+            var x = S[st.i + 1]; $("next").innerHTML = x ? "Berikutnya: <b>" + esc(x.t) + "</b> (" + x.m + " mnt)" : "<b>Langkah terakhir</b>";
+            var tot = st.e.reduce(function (a, b) {return a + b}, 0);
+            $("sLeft").textContent = "Sisa total " + fmt(total() - tot); $("sStep").textContent = "Langkah " + (st.i + 1) + "/" + n;
+            var pS = 0, aS = 0; for (var k = 0; k < st.i; k++) {pS += S[k].m * 60; aS += st.e[k]}
+            var d = pS - aS - Math.max(0, e - plan), b = $("badge");
+            b.textContent = tot < 1 ? "Belum mulai" : Math.abs(d) < 10 ? "Tepat waktu" : d > 0 ? "Lebih cepat " + fmt(d) : "Terlambat " + fmt(-d)
+        }
+        function renderList() {
+            var h = "", ph = null, dl = "", seen = {};
+            if (!S.length) h = '<div class="empty">Isi formulir di atas, lalu tekan Tambah.</div>';
+            S.forEach(function (x, j) {
+                if (x.p !== ph) {ph = x.p; h += '<div class="ph">' + esc(ph) + '</div>'}
+                if (!seen[x.p]) {seen[x.p] = 1; dl += '<option value="' + esc(x.p) + '">'}
+                h += '<div class="item' + (j === st.i ? " cur" : "") + (j < st.i ? " done" : "") + '"><span class="t">' + (j + 1) + ". " + esc(x.t) + '</span><span class="m' + (st.e[j] > x.m * 60 ? " o" : "") + '">' + (st.e[j] > 0 ? fmt(st.e[j]) + " / " : "") + x.m + ' mnt</span>'
+                    + '<button data-a="go" data-j="' + j + '" aria-label="Mulai dari sini">▶</button><button data-a="ed" data-j="' + j + '" aria-label="Ubah">✎</button><button data-a="up" data-j="' + j + '" aria-label="Naik">▲</button><button data-a="dn" data-j="' + j + '" aria-label="Turun">▼</button><button data-a="rm" data-j="' + j + '" aria-label="Hapus">✕</button></div>'
+            });
+            $("list").innerHTML = h; $("dl").innerHTML = dl
+        }
+        function openMenu() {$("menu").hidden = false; renderList(); render()}
+        function formClear() {ed = -1; $("fT").value = ""; $("fN").value = ""; $("bAdd").textContent = "+ Tambah langkah"}
+        function add() {
+            var p = $("fP").value.trim() || "Kegiatan", t = $("fT").value.trim(), m = parseFloat($("fM").value), n = $("fN").value.trim();
+            if (!t) {$("err").textContent = "Isi nama langkah dulu."; $("fT").focus(); return }
+            if (!(m > 0)) {$("err").textContent = "Isi menit (angka lebih dari 0)."; $("fM").focus(); return }
+            $("err").textContent = "";
+            var o = {p: p, t: t, m: m, n: n};
+            if (ed >= 0) {S[ed] = o} else {S.push(o); st.e.push(0)}
+            formClear(); changed(); $("fT").focus()
+        }
+        function confirmTap(key, btn, label, fn) {
+            if (armed[key]) {clearTimeout(armed[key]); armed[key] = 0; fn(); return }
+            btn.textContent = "Yakin? Ketuk lagi"; armed[key] = setTimeout(function () {armed[key] = 0; btn.textContent = label}, 3000)
+        }
+        $("bAdd").onclick = add;
+        ["fP", "fT", "fM", "fN"].forEach(function (id) {$(id).addEventListener("keydown", function (ev) {if (ev.key === "Enter") {ev.preventDefault(); add()} })});
+        $("list").onclick = function (ev) {
+            var b = ev.target.closest("[data-a]"); if (!b) return; var j = +b.dataset.j, a = b.dataset.a;
+            if (a === "go") {go(j); $("menu").hidden = true}
+            else if (a === "ed") {var x = S[j]; ed = j; $("fP").value = x.p; $("fT").value = x.t; $("fM").value = x.m; $("fN").value = x.n || ""; $("bAdd").textContent = "💾 Simpan perubahan"; $("fT").focus(); $("menu").scrollTo(0, 0)}
+            else if (a === "up" && j > 0 || a === "dn" && j < S.length - 1) {
+                var k = a === "up" ? j - 1 : j + 1;
+                [S[j], S[k]] = [S[k], S[j]];[st.e[j], st.e[k]] = [st.e[k], st.e[j]];
+                if (st.i === j) st.i = k; else if (st.i === k) st.i = j;
+                changed()
+            }
+            else if (a === "rm") {S.splice(j, 1); st.e.splice(j, 1); if (j < st.i) st.i--; if (ed === j) formClear(); changed()}
+        };
+        $("oEx").onclick = function () {
+            var f = function () {S = JSON.parse(JSON.stringify(EX)); st.e = S.map(function () {return 0}); st.i = 0; st.run = false; changed()};
+            S.length ? confirmTap("ex", $("oEx"), "Isi contoh Modul", f) : f()
+        };
+        $("oClear").onclick = function () {confirmTap("cl", $("oClear"), "🗑 Hapus semua", function () {S = []; st.e = []; st.i = 0; formClear(); $("oClear").textContent = "🗑 Hapus semua"; changed()})};
+        $("oReset").onclick = function () {confirmTap("rs", $("oReset"), "↺ Reset waktu", function () {st.e = S.map(function () {return 0}); st.i = 0; st.run = false; $("oReset").textContent = "↺ Reset waktu"; changed()})};
+        $("oSnd").onclick = function () {st.snd = !st.snd; save(); render()};
+        $("oAuto").onclick = function () {st.auto = !st.auto; save(); render()};
+        $("oClose").onclick = function () {$("menu").hidden = true};
+        $("bMenu").onclick = openMenu; $("bRun").onclick = toggle; $("bNext").onclick = next; $("bPrev").onclick = function () {go(st.i - 1)};
+        $("bFull").onclick = function () {try {document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()} catch (e) { } };
+        document.addEventListener("keydown", function (ev) {
+            if (!$("menu").hidden || /INPUT|TEXTAREA/.test(ev.target.tagName)) return;
+            if (ev.code === "Space") {ev.preventDefault(); toggle()}
+            else if (ev.code === "ArrowRight") next();
+            else if (ev.code === "ArrowLeft") go(st.i - 1);
+            else if (ev.key === "f") $("bFull").onclick();
+        });
+        S.forEach(function (s, i) {if (st.e[i] >= s.m * 60) beeped[i] = true});
+        if (!S.length) {$("menu").hidden = false}
+        renderList(); render(); setInterval(tick, 250);
+    </script>
+</body>
+
+</html>
