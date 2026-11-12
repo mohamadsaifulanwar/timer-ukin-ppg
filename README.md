@@ -1,4 +1,4 @@
-# ⏱️ Timer Kegiatan Pembelajaran
+# ⏱️ Timer UKIN PPG
 
 Timer kelas berbasis satu file HTML untuk memantau **urutan kegiatan pembelajaran** (pendahuluan, inti, penutup) agar tidak ada langkah yang terlewat dan waktu tidak terlampaui. Dirancang untuk guru yang berdiri di depan kelas sementara layar timer diletakkan di belakang kelas, sehingga tampilannya besar dan kontras tinggi.
 
@@ -33,10 +33,9 @@ Tanpa instalasi, tanpa backend, tanpa dependensi. Cukup buka `index.html` di bro
 | `←` | Langkah sebelumnya |
 | `F` | Layar penuh |
 
-## Menjalankan atau menghosting
+## Menjalankan
 
-- **Lokal:** klik dua kali `index.html`.
-- **GitHub Pages:** buka *Settings → Pages*, pilih branch `main` dan folder `/ (root)`. Timer lalu dapat dibuka lewat tautan `https://<username>.github.io/<nama-repo>/`.
+Bisa mengakses https://mohamadsaifulanwar.github.io/timer-ukin-ppg/ untuk langsung menggunakannya.
 
 ## Catatan teknis
 
