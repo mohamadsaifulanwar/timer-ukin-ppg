@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Timer UKIN PPG</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             --text: #fff;
@@ -325,6 +326,32 @@
             color: var(--muted);
             padding: 24px
         }
+        .social {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 18px
+        }
+
+        .social a {
+            width: 52px;
+            height: 52px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: var(--panel);
+            border: 2px solid rgba(255, 255, 255, .25);
+            color: #fff;
+            font-size: 1.6rem;
+            text-decoration: none
+        }
+
+        .social a:hover,
+        .social a:focus-visible {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
     </style>
 </head>
 
@@ -366,6 +393,20 @@
                 <button id="oSnd"></button><button id="oAuto"></button><button id="oEx">Gunakan Draf</button><button
                     id="oReset">↺ Reset waktu</button><button id="oClear">🗑 Hapus semua</button><button id="oClose">✕
                     Tutup</button>
+            </div>
+            <div class="social">
+                <a href="https://www.linkedin.com/in/mohamad-saiful-anwar/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <a href="https://instagram.com/saiful.lll/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://github.com/mohamadsaifulanwar/" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="mailto:saifalanwar3@gmail.com" aria-label="Email">
+                    <i class="fas fa-envelope"></i>
+                </a>
             </div>
         </div>
     </div>
